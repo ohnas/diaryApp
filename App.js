@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect, useState } from "react";
 import Navigator from "./navigator";
+import { DBContext } from "./context";
 
 const FeelingSchema = {
   name: "Feeling",
@@ -16,13 +17,14 @@ const FeelingSchema = {
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const [realm, setRealm] = useState(null);
   async function prepare() {
     try {
-      const realm = await Realm.open({
+      const connection = await Realm.open({
         path: "diaryDB",
         schema: [FeelingSchema],
       });
-      console.log("is DB Open?", realm);
+      setRealm(connection);
     } catch (e) {
       console.warn(e);
     } finally {
@@ -49,8 +51,10 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <Navigator />
-    </NavigationContainer>
+    <DBContext.Provider value={realm}>
+      <NavigationContainer>
+        <Navigator />
+      </NavigationContainer>
+    </DBContext.Provider>
   );
 }
